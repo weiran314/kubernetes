@@ -673,30 +673,32 @@ func (v *idTokenVerifier) verifyAudience(t *oidc.IDToken) error {
 }
 
 func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) (*authenticator.Response, bool, error) {
+	fmt.Println("XXXXweiran2.1")
 	if !hasCorrectIssuer(a.jwtAuthenticator.Issuer.URL, token) {
 		return nil, false, nil
 	}
-
+	fmt.Println("XXXXweiran2.2")
 	verifier, ok := a.idTokenVerifier()
 	if !ok {
 		return nil, false, fmt.Errorf("oidc: authenticator not initialized")
 	}
-
+	fmt.Println("XXXXweiran2.3")
 	idToken, err := verifier.Verify(ctx, token)
 	if err != nil {
 		return nil, false, fmt.Errorf("oidc: verify token: %v", err)
 	}
-
+	fmt.Println("XXXXweiran2.4")
 	var c claims
 	if err := idToken.Claims(&c); err != nil {
 		return nil, false, fmt.Errorf("oidc: parse claims: %v", err)
 	}
+	fmt.Println("XXXXweiran2.5")
 	if a.resolver != nil {
 		if err := a.resolver.expand(ctx, c); err != nil {
 			return nil, false, fmt.Errorf("oidc: could not expand distributed claims: %v", err)
 		}
 	}
-
+	fmt.Println("XXXXweiran2.6")
 	var claimsUnstructured *unstructured.Unstructured
 	// Convert the claims to unstructured so that we can evaluate the CEL expressions
 	// against the claims. This is done once here so that we don't have to convert
@@ -712,20 +714,21 @@ func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) 
 		}
 	}
 
+	fmt.Println("XXXXweiran2.7")
 	var username string
 	if username, err = a.getUsername(ctx, c, claimsUnstructured); err != nil {
 		return nil, false, err
 	}
-
+	fmt.Println("XXXXweiran2.8")
 	info := &user.DefaultInfo{Name: username}
 	if info.Groups, err = a.getGroups(ctx, c, claimsUnstructured); err != nil {
 		return nil, false, err
 	}
-
+	fmt.Println("XXXXweiran2.9")
 	if info.UID, err = a.getUID(ctx, c, claimsUnstructured); err != nil {
 		return nil, false, err
 	}
-
+	fmt.Println("XXXXweiran2.10")
 	extra, err := a.getExtra(ctx, claimsUnstructured)
 	if err != nil {
 		return nil, false, err
@@ -733,7 +736,7 @@ func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) 
 	if len(extra) > 0 {
 		info.Extra = extra
 	}
-
+	fmt.Println("XXXXweiran2.11")
 	// check to ensure all required claims are present in the ID token and have matching values.
 	for claim, value := range a.requiredClaims {
 		if !c.hasClaim(claim) {
@@ -749,7 +752,7 @@ func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) 
 			return nil, false, fmt.Errorf("oidc: required claim %s value does not match. Got = %s, want = %s", claim, claimValue, value)
 		}
 	}
-
+	fmt.Println("XXXXweiran2.12")
 	if a.celMapper.ClaimValidationRules != nil {
 		evalResult, err := a.celMapper.ClaimValidationRules.EvalClaimMappings(ctx, claimsUnstructured)
 		if err != nil {
@@ -766,6 +769,7 @@ func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) 
 		}
 	}
 
+	fmt.Println("XXXXweiran2.13")
 	if a.celMapper.UserValidationRules != nil {
 		// Convert the user info to unstructured so that we can evaluate the CEL expressions
 		// against the user info. This is done once here so that we don't have to convert
@@ -789,7 +793,7 @@ func (a *jwtAuthenticator) AuthenticateToken(ctx context.Context, token string) 
 			return nil, false, fmt.Errorf("oidc: error evaluating user info validation rule: %w", err)
 		}
 	}
-
+	fmt.Println("XXXXweiran2.14")
 	return &authenticator.Response{User: info}, true, nil
 }
 

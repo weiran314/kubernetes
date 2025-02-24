@@ -332,15 +332,16 @@ type Validator[PrivateClaims any] interface {
 }
 
 func (j *jwtTokenAuthenticator[PrivateClaims]) AuthenticateToken(ctx context.Context, tokenData string) (*authenticator.Response, bool, error) {
+	fmt.Println("XXXXweiran1.1")
 	if !j.hasCorrectIssuer(tokenData) {
 		return nil, false, nil
 	}
-
+	fmt.Println("XXXXweiran1.2")
 	tok, err := jwt.ParseSigned(tokenData)
 	if err != nil {
 		return nil, false, nil
 	}
-
+	fmt.Println("XXXXweiran1.3")
 	public := &jwt.Claims{}
 	private := new(PrivateClaims)
 
@@ -369,7 +370,7 @@ func (j *jwtTokenAuthenticator[PrivateClaims]) AuthenticateToken(ctx context.Con
 		found = true
 		break
 	}
-
+	fmt.Println("XXXXweiran1.4")
 	if !found {
 		return nil, false, utilerrors.NewAggregate(errlist)
 	}
@@ -392,12 +393,13 @@ func (j *jwtTokenAuthenticator[PrivateClaims]) AuthenticateToken(ctx context.Con
 		// default to apiserver audiences
 		requestedAudiences = j.implicitAuds
 	}
-
+	fmt.Println("XXXXweiran1.5")
 	auds := authenticator.Audiences(tokenAudiences).Intersect(requestedAudiences)
 	if len(auds) == 0 && len(j.implicitAuds) != 0 {
 		return nil, false, fmt.Errorf("token audiences %q is invalid for the target audiences %q", tokenAudiences, requestedAudiences)
 	}
 
+	fmt.Println("XXXXweiran1.6")
 	// If we get here, we have a token with a recognized signature and
 	// issuer string.
 	sa, err := j.validator.Validate(ctx, tokenData, public, private)
@@ -405,6 +407,7 @@ func (j *jwtTokenAuthenticator[PrivateClaims]) AuthenticateToken(ctx context.Con
 		return nil, false, err
 	}
 
+	fmt.Println("XXXXweiran1.7")
 	return &authenticator.Response{
 		User:      sa.UserInfo(),
 		Audiences: auds,
