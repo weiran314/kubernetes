@@ -18,6 +18,8 @@ package union
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
@@ -52,8 +54,16 @@ func NewFailOnError(authTokenHandlers ...authenticator.Token) authenticator.Toke
 // AuthenticateToken authenticates the token using a chain of authenticator.Token objects.
 func (authHandler *unionAuthTokenHandler) AuthenticateToken(ctx context.Context, token string) (*authenticator.Response, bool, error) {
 	var errlist []error
+	fmt.Println("weiranxxxunion1")
 	for _, currAuthRequestHandler := range authHandler.Handlers {
+		fmt.Println("weiranxxxunion2")
 		info, ok, err := currAuthRequestHandler.AuthenticateToken(ctx, token)
+		tt := reflect.TypeOf(currAuthRequestHandler)
+		if tt.Kind() == reflect.Ptr {
+			tt = tt.Elem()
+		}
+
+		fmt.Printf("weiranxxxunion3, type:%v, auth:%v, ok:%v", tt, currAuthRequestHandler, ok)
 		if err != nil {
 			if authHandler.FailOnError {
 				return info, ok, err

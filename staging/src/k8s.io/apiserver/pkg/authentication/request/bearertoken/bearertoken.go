@@ -19,6 +19,7 @@ package bearertoken
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"k8s.io/apiserver/pkg/authentication/authenticator"
@@ -36,7 +37,6 @@ type Authenticator struct {
 func New(auth authenticator.Token) *Authenticator {
 	return &Authenticator{auth}
 }
-
 
 func (a *Authenticator) AuthenticateRequest(req *http.Request) (*authenticator.Response, bool, error) {
 	auth := strings.TrimSpace(req.Header.Get("Authorization"))
@@ -66,9 +66,13 @@ func (a *Authenticator) AuthenticateRequest(req *http.Request) (*authenticator.R
 		req.Header.Del("Authorization")
 	}
 
+	tt := reflect.TypeOf(a.auth)
+	if tt.Kind() == reflect.Ptr {
+		tt = tt.Elem()
+	}
 	// If the token authenticator didn't error, provide a default error
 	if !ok && err == nil {
-		err = fmt.Errorf("weiran: invalid bearer token: %s", token)
+		err = fmt.Errorf("weiran: invalid bearer token: %s, type: %v, auth: %v", token, tt, a.auth)
 	}
 
 	return resp, ok, err
